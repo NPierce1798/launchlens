@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { Search, BarChart3, User, LogOut, Menu, X } from 'lucide-react';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export default function Navbar() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
 

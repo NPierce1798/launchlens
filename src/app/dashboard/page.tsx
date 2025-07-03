@@ -4,13 +4,32 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { User, Building2, Calendar, Target, CheckCircle, AlertCircle, ExternalLink, FileText, TrendingUp, Users } from 'lucide-react';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
+
+// Define types for better type safety
+interface CompetitorInfo {
+    name: string;
+    website?: string;
+    founded?: string;
+    description?: string;
+    focus?: string;
+    success?: string;
+    pitfalls?: string;
+}
+
+interface TrackedCompetitor {
+    id: string;
+    user_id: string;
+    idea: string;
+    info: CompetitorInfo;
+}
 
 export default function DashboardPage() {
     const router = useRouter();
-    const [user, setUser] = useState<any>(null);
-    const [tracked, setTracked] = useState<any[]>([]);
+    const [user, setUser] = useState<SupabaseUser | null>(null);
+    const [tracked, setTracked] = useState<TrackedCompetitor[]>([]);
     const [existingReports, setExistingReports] = useState<string[]>([]);
-    const [generating, setGenerating] = useState<{ [key: string]: Boolean }>({});
+    const [generating, setGenerating] = useState<{ [key: string]: boolean }>({});
 
     useEffect(() => {
         const fetchUserAndData = async () => {
@@ -39,14 +58,14 @@ export default function DashboardPage() {
         };
 
         fetchUserAndData();
-    }, []);
+    }, [router]);
 
     const handleViewReport = (name: string) => {
         const encodeName = encodeURIComponent(name);
         router.push(`/report?name=${encodeName}`);
     }
 
-    const handleGenerateReport = async (info: any) => {
+    const handleGenerateReport = async (info: CompetitorInfo) => {
         const name = info.name;
 
         try {
@@ -72,7 +91,7 @@ export default function DashboardPage() {
 
             for (const report of reports) {
                 console.log(`Saving for: ${report}`)
-                const { data, error } = await supabase.from('reports').insert({
+                const { error } = await supabase.from('reports').insert({
                     user_id: session?.user?.id,
                     competitor_name: report.original.name,
                     report_data: JSON.parse(JSON.stringify(report)),
@@ -100,7 +119,7 @@ export default function DashboardPage() {
         if (!acc[idea]) acc[idea] = [];
         acc[idea].push(item);
         return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, TrackedCompetitor[]>);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
@@ -260,7 +279,7 @@ export default function DashboardPage() {
                         </div>
                         <h3 className="text-xl font-semibold text-white mb-2">No Competitors Tracked</h3>
                         <p className="text-gray-400 max-w-md mx-auto">
-                            You haven't tracked any competitors yet. Start by adding companies to monitor and analyze their performance.
+                            You haven&apos;t tracked any competitors yet. Start by adding companies to monitor and analyze their performance.
                         </p>
                     </div>
                 )}

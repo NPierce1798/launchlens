@@ -48,10 +48,10 @@ export default function Home() {
           <h2 className='text-2xl font-semibold text-center'>Coming Soon:</h2>
             <ul className="space-y-6 max-w-xl mx-auto">
               <li>
-                <strong>- MVP Assist.</strong> Need help planning your MVP? We're putting together a guide and toolkit to help with the whole process start to finish.
+                <strong>- MVP Assist.</strong> Need help planning your MVP? We&apos;re putting together a guide and toolkit to help with the whole process start to finish.
               </li>
               <li>
-                <strong>- Pitch Deck Builder</strong> We want you to be successful so we're working with lead fundraisers to put together a tool to help you create an effective pitchdeck.
+                <strong>- Pitch Deck Builder</strong> We want you to be successful so we&apos;re working with lead fundraisers to put together a tool to help you create an effective pitchdeck.
               </li>
             </ul>
         </div>

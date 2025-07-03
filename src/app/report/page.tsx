@@ -5,11 +5,84 @@ import { supabase } from '@/lib/supabaseClient';
 import Image from 'next/image';
 import { Calendar, MapPin, Building2, Users, DollarSign, TrendingUp, ExternalLink, Globe, Briefcase } from 'lucide-react';
 
-export default function ReportContent() {
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
+// Define types for better type safety
+interface DateObject {
+  month: number;
+  day: number;
+  year: number;
+}
+
+interface Investor {
+  name: string;
+  type: string;
+  linkedin_profile_url?: string;
+}
+
+interface FundingData {
+  announced_date?: DateObject;
+  investor_list?: Investor[];
+  [key: string]: unknown;
+}
+
+interface CompanyUpdate {
+  posted_on?: DateObject;
+  text: string;
+  article_link?: string;
+}
+
+interface NewsItem {
+  title: string;
+  link: string;
+  summary: string;
+}
+
+interface SimilarCompany {
+  name: string;
+  industry: string;
+  location: string;
+  link?: string;
+}
+
+interface ProxyData {
+  profile_pic_url?: string;
+  description?: string;
+  industry?: string;
+  company_size_on_linkedin?: string;
+  company_type?: string;
+  extra?: {
+    company_type?: string;
+  };
+  hq?: {
+    line_1?: string;
+    city?: string;
+    country?: string;
+    postal_code?: string;
+  };
+  funding_data?: FundingData[];
+  updates?: CompanyUpdate[];
+  categories?: string[];
+  specialties?: string[];
+  similar_companies?: SimilarCompany[];
+}
+
+interface OriginalCompany {
+  name: string;
+}
+
+interface Report {
+  original: OriginalCompany;
+  proxyData: ProxyData;
+  news: NewsItem[];
+  sentimentScore?: number;
+}
+
+export default function ReportPage() {
   const [name, setName] = useState<string | null>(null);
-  const [report, setReport] = useState<any>(null);
+  const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     // Get search params from window.location instead of useSearchParams
@@ -22,8 +95,6 @@ export default function ReportContent() {
     const fetchReport = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !name) return;
-
-      setUser(user);
 
       const { data, error } = await supabase
         .from('reports')
@@ -45,7 +116,7 @@ export default function ReportContent() {
   }, [name]);
 
   // Prepare keywords data for word cloud
-  const prepareKeywordsData = (proxyData: any) => {
+  const prepareKeywordsData = (proxyData: ProxyData) => {
     try {
       const categories = Array.isArray(proxyData?.categories) ? proxyData.categories : [];
       const specialties = Array.isArray(proxyData?.specialties) ? proxyData.specialties : [];
@@ -79,7 +150,7 @@ export default function ReportContent() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
         <div className="text-center bg-gray-800/50 backdrop-blur-sm rounded-xl p-8 border border-gray-700">
-          <p className="text-white text-xl">No report found for "{name}"</p>
+          <p className="text-white text-xl">No report found for &quot;{name}&quot;</p>
           <p className="text-gray-400 mt-2">Try generating a new report or check the company name.</p>
         </div>
       </div>
@@ -189,12 +260,13 @@ export default function ReportContent() {
                   Funding History
                 </h2>
                 <div className="space-y-4">
-                  {proxyData.funding_data.map((item: any, index: number) => (
+                  {proxyData.funding_data.map((item: FundingData, index: number) => (
                     <div key={index} className="bg-gray-900/50 rounded-xl p-5 border border-gray-600/30">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Object.entries(item).map(([key, value]: [string, any]) => {
+                        {Object.entries(item).map(([key, value]) => {
                           if (key === 'announced_date' && typeof value === 'object' && value !== null) {
-                            const dateStr = `${value.month}/${value.day}/${value.year}`;
+                            const dateObj = value as DateObject;
+                            const dateStr = `${dateObj.month}/${dateObj.day}/${dateObj.year}`;
                             return (
                               <div key={key} className="flex items-center gap-2">
                                 <Calendar size={16} className="text-blue-400" />
@@ -211,7 +283,7 @@ export default function ReportContent() {
                               <div key={key} className="md:col-span-2">
                                 <p className="text-gray-400 text-sm mb-2">Investors</p>
                                 <div className="flex flex-wrap gap-2">
-                                  {value.map((inv: any, i: number) => (
+                                  {value.map((inv: Investor, i: number) => (
                                     <div key={i} className="bg-blue-500/20 border border-blue-500/30 rounded-lg px-3 py-1">
                                       <span className="text-blue-300 text-sm font-medium">{inv.name}</span>
                                       <span className="text-gray-400 text-xs ml-1">({inv.type})</span>
@@ -236,7 +308,7 @@ export default function ReportContent() {
                             return (
                               <div key={key}>
                                 <p className="text-gray-400 text-sm">{key.replace(/_/g, ' ')}</p>
-                                <p className="text-white font-medium">{value?.toString() || 'Undisclosed'}</p>
+                                <p className="text-white font-medium">{String(value) || 'Undisclosed'}</p>
                               </div>
                             );
                           }
@@ -254,7 +326,7 @@ export default function ReportContent() {
               <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
                 <h2 className="text-2xl font-bold text-blue-400 mb-6">Company Updates</h2>
                 <div className="space-y-4">
-                  {proxyData.updates.map((update: any, index: number) => (
+                  {proxyData.updates.map((update: CompanyUpdate, index: number) => (
                     <div key={index} className="bg-gray-900/50 rounded-xl p-5 border border-gray-600/30">
                       <div className="flex items-start gap-3">
                         <Calendar size={16} className="text-blue-400 mt-1" />
@@ -288,7 +360,7 @@ export default function ReportContent() {
               <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
                 <h2 className="text-2xl font-bold text-blue-400 mb-6">Recent News</h2>
                 <div className="space-y-4">
-                  {news.map((item: any, i: number) => (
+                  {news.map((item: NewsItem, i: number) => (
                     <div key={i} className="bg-gray-900/50 rounded-xl p-5 border border-gray-600/30 hover:border-blue-500/30 transition-colors">
                       <a 
                         href={item.link} 
@@ -330,7 +402,7 @@ export default function ReportContent() {
               <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
                 <h2 className="text-xl font-bold text-blue-400 mb-4">Similar Companies</h2>
                 <div className="space-y-3">
-                  {proxyData.similar_companies.map((company: any, index: number) => (
+                  {proxyData.similar_companies.map((company: SimilarCompany, index: number) => (
                     <div key={index} className="bg-gray-900/50 rounded-lg p-4 border border-gray-600/30">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">

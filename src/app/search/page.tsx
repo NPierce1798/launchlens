@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { Search, Building2, Calendar, Target, CheckCircle, AlertCircle, ExternalLink, Plus, Minus, Eye, TrendingUp } from 'lucide-react';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 type Competitor = {
     name: string;
@@ -26,16 +27,16 @@ export default function SearchPage() {
                 setUser(data.user);
             }
         });
-    }, []);
+    }, [router]);
 
     const [idea, setIdea] = useState('');
     const [targetCustomer, setTargetCustomer] = useState('');
     const [problem, setProblem] = useState('');
     const [industry, setIndustry] = useState('');
     const [loading, setLoading] = useState(false);
-    const [competitors, setCompetitors] = useState<any[]>([]);
+    const [competitors, setCompetitors] = useState<Competitor[]>([]);
     const [selectedCompetitors, setSelectedCompetitors] = useState<Competitor[]>([]);
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<SupabaseUser | null>(null);
     const [trackedCompetitors, setTrackedCompetitors] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
 
@@ -62,7 +63,7 @@ export default function SearchPage() {
         setLoading(false);
     };
 
-    const handleAdd = (comp: any) => {
+    const handleAdd = (comp: Competitor) => {
         const isAdded = selectedCompetitors.some((c) => c.name === comp.name);
         if (isAdded) {
             console.log(`Removing ${comp.name}`);
@@ -118,7 +119,7 @@ export default function SearchPage() {
                         <h1 className="text-3xl font-bold text-white">LaunchLens Finder</h1>
                     </div>
                     <p className="text-gray-300">
-                        Enter your business idea and we'll identify similar companies and competitors for you.
+                        Enter your business idea and we&apos;ll identify similar companies and competitors for you.
                     </p>
                 </div>
 
