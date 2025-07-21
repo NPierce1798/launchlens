@@ -5,6 +5,24 @@ import { useRouter } from 'next/navigation';
 import { Wrench, Target, Users, Zap, ArrowRight, CheckCircle, Plus, X, List, MapPin, ArrowDown, FileText, Presentation } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
+interface Feature {
+  id: number;
+  name: string;
+  priority: string;
+}
+
+interface JourneyFeature {
+  id: number;
+  name: string;
+}
+
+interface UserJourneyStep {
+  id: number;
+  step: string;
+  features: JourneyFeature[];
+  isDefault?: boolean;
+}
+
 export default function MVPBuilder() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -13,10 +31,10 @@ export default function MVPBuilder() {
     solution: '',
     industry: ''
   });
-  const [features, setFeatures] = useState([]);
-  const [draggedFeature, setDraggedFeature] = useState(null);
+  const [features, setFeatures] = useState<Feature[]>([]);
+  const [draggedFeature, setDraggedFeature] = useState<Feature | null>(null);
   const [newFeature, setNewFeature] = useState('');
-  const [userJourney, setUserJourney] = useState([
+  const [userJourney, setUserJourney] = useState<UserJourneyStep[]>([
     { id: 1, step: 'User discovers your product', features: [], isDefault: true },
     { id: 2, step: 'User signs up or gets started', features: [], isDefault: true },
     { id: 3, step: 'User achieves their main goal', features: [], isDefault: true }
@@ -29,7 +47,7 @@ export default function MVPBuilder() {
 
   const router = useRouter();
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -80,9 +98,10 @@ export default function MVPBuilder() {
 
       router.push(`/report/${mvpId}`);
 
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error saving MVP: ', err);
-      setError(err.message || 'Failed to save MVP. Please try again');
+      setError(err instanceof Error ? err.message : 'Failed to save MVP. Please try again');
+      console.log(error)
     } finally {
       setIsGenerating(false);
     }
@@ -100,7 +119,7 @@ export default function MVPBuilder() {
     }
   };
 
-  const isStepComplete = (step) => {
+  const isStepComplete = (step: number) => {
     switch (step) {
       case 1: return formData.problemStatement.trim().length > 20;
       case 2: return formData.targetCustomer.trim().length > 20;
@@ -123,17 +142,17 @@ export default function MVPBuilder() {
     }
   };
 
-  const handleDragStart = (e, feature) => {
+  const handleDragStart = (e: React.DragEvent, feature: Feature) => {
     setDraggedFeature(feature);
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e, priority) => {
+  const handleDrop = (e: React.DragEvent, priority: string) => {
     e.preventDefault();
     if (draggedFeature) {
       setFeatures(features.map(f => 
@@ -145,7 +164,7 @@ export default function MVPBuilder() {
     }
   };
 
-  const removeFeature = (featureId) => {
+  const removeFeature = (featureId: number) => {
     setFeatures(features.filter(f => f.id !== featureId));
   };
 
@@ -161,11 +180,11 @@ export default function MVPBuilder() {
     }
   };
 
-  const removeJourneyStep = (stepId) => {
+  const removeJourneyStep = (stepId: number) => {
     setUserJourney(userJourney.filter(step => step.id !== stepId));
   };
 
-  const addFeatureToJourneyStep = (stepId, featureName) => {
+  const addFeatureToJourneyStep = (stepId: number, featureName: string) => {
     setUserJourney(userJourney.map(step => 
       step.id === stepId 
         ? { ...step, features: [...step.features, { id: Date.now(), name: featureName }] }
@@ -173,7 +192,7 @@ export default function MVPBuilder() {
     ));
   };
 
-  const removeFeatureFromJourneyStep = (stepId, featureId) => {
+  const removeFeatureFromJourneyStep = (stepId: number, featureId: number) => {
     setUserJourney(userJourney.map(step => 
       step.id === stepId 
         ? { ...step, features: step.features.filter(f => f.id !== featureId) }
@@ -195,7 +214,7 @@ export default function MVPBuilder() {
             <h1 className="text-3xl font-bold">MVP Builder</h1>
           </div>
           <p className="text-gray-600 dark:text-gray-300 text-lg">
-            Transform your startup idea into a focused, buildable MVP. We'll help you identify core features, prioritize development, and create a roadmap for success.
+            Transform your startup idea into a focused, buildable MVP. We&apos;ll help you identify core features, prioritize development, and create a roadmap for success.
           </p>
         </div>
       </div>
@@ -318,7 +337,7 @@ export default function MVPBuilder() {
               {currentStep === 3 && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">What's your solution?</h2>
+                    <h2 className="text-2xl font-bold mb-2">What&apos;s your solution?</h2>
                     <p className="text-gray-600 dark:text-gray-300 mb-6">
                       Describe how your product solves the problem. Focus on the core value proposition.
                     </p>
@@ -377,7 +396,7 @@ export default function MVPBuilder() {
                   <div>
                     <h2 className="text-2xl font-bold mb-2">Prioritize Your Features</h2>
                     <p className="text-gray-600 dark:text-gray-300 mb-6">
-                      Add features and drag them into the appropriate priority columns. Focus on what's essential for your MVP.
+                      Add features and drag them into the appropriate priority columns. Focus on what&apos;s essential for your MVP.
                     </p>
                   </div>
                   
@@ -552,16 +571,18 @@ export default function MVPBuilder() {
                                 placeholder="Type a feature needed here..."
                                 className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                                 onKeyPress={(e) => {
-                                  if (e.key === 'Enter' && e.target.value.trim()) {
-                                    addFeatureToJourneyStep(step.id, e.target.value.trim());
-                                    e.target.value = '';
+                                  const target = e.target as HTMLInputElement;
+                                  if (e.key === 'Enter' && target.value.trim()) {
+                                    addFeatureToJourneyStep(step.id, target.value.trim());
+                                    target.value = '';
                                   }
                                 }}
                               />
                               <button
                                 onClick={(e) => {
-                                  const input = e.target.parentElement.querySelector('input');
-                                  if (input.value.trim()) {
+                                  const button = e.target as HTMLButtonElement;
+                                  const input = button.parentElement?.querySelector('input') as HTMLInputElement;
+                                  if (input?.value.trim()) {
                                     addFeatureToJourneyStep(step.id, input.value.trim());
                                     input.value = '';
                                   }
@@ -612,7 +633,7 @@ export default function MVPBuilder() {
                   <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                     <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">💡 Tips for mapping your user journey:</h4>
                     <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                      <li>• Think like your customer - what's their first impression?</li>
+                      <li>• Think like your customer - what&apos;s their first impression?</li>
                       <li>• Focus on the main path to success, not every possible action</li>
                       <li>• Each step should move them closer to their goal</li>
                       <li>• Consider what might stop them at each step</li>
@@ -647,7 +668,7 @@ export default function MVPBuilder() {
                           <span className="font-semibold">Include Pitch Deck Builder</span>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Generate a professional pitch deck alongside your MVP plan using the information you've provided. 
+                          Generate a professional pitch deck alongside your MVP plan using the information you&apos;ve provided. 
                           This will include slides for problem statement, solution, target market, features, and roadmap.
                         </p>
                       </label>

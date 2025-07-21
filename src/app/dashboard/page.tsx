@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { 
     User, Building2, Calendar, Target, CheckCircle, AlertCircle, ExternalLink, 
     FileText, TrendingUp, Users, Plus, Rocket, Lightbulb, BarChart3, 
-    Clock, Eye, Edit, Trash2 
+    Clock, Eye, Trash2 
 } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
@@ -43,7 +43,7 @@ interface MVPPlan {
         }>;
         generatedAt: string;
     };
-    insights?: any;
+    insights?: Record<string, unknown>;
     created_at: string;
 }
 
@@ -51,7 +51,7 @@ interface Report {
     id: string;
     user_id: string;
     competitor_name: string;
-    report_data: any;
+    report_data: Record<string, unknown>;
     created_at: string;
 }
 
@@ -287,7 +287,7 @@ export default function DashboardPage() {
                         ].map((tab) => (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
+                                onClick={() => setActiveTab(tab.id as 'overview' | 'mvps' | 'competitors' | 'reports')}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                                     activeTab === tab.id
                                         ? 'bg-blue-600 text-white'
@@ -631,7 +631,7 @@ export default function DashboardPage() {
                                 </div>
                                 <h3 className="text-xl font-semibold text-white mb-2">No Competitors Tracked</h3>
                                 <p className="text-gray-400 max-w-md mx-auto">
-                                    You haven't tracked any competitors yet. Start by adding companies to monitor and analyze their performance.
+                                    You haven&apos;t tracked any competitors yet. Start by adding companies to monitor and analyze their performance.
                                 </p>
                             </div>
                         )}

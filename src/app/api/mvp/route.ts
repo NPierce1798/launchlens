@@ -43,7 +43,6 @@ export async function POST(request: NextRequest) {
         const openaiClient = new OpenAiClient(openaiApiKey);
 
         // Generate insights using the MVP data
-        const stringifiedMvp = JSON.stringify(mvp, null, 2);
         console.log('Getting insights for: ', mvp);
         const insights = await openaiClient.generateMVPInsights(mvp);
         console.log('Insights returned: ', insights);
