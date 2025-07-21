@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Wrench, Target, Users, Zap, ArrowRight, CheckCircle, Plus, X, List, MapPin, ArrowDown, FileText, Presentation } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
@@ -24,6 +24,9 @@ interface UserJourneyStep {
 }
 
 export default function MVPBuilder() {
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     problemStatement: '',
@@ -46,6 +49,28 @@ export default function MVPBuilder() {
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+
+        if (error || !user) {
+          router.push('/login');
+          return;
+        }
+
+        setIsAuthenticated(true);
+      } catch (err) {
+        console.error('Auth check failed: ', err);
+        router.push('/login');
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
+  }, [router])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -201,6 +226,18 @@ export default function MVPBuilder() {
   };
 
   const canProceed = isStepComplete(currentStep);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#121212] text-gray-800 dark:text-white">
