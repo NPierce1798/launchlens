@@ -7,8 +7,23 @@ import { supabase } from '@/lib/supabaseClient';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface PageProps {
-    params: {
+    params: Promise<{
         id: string;
+    }>;
+}
+
+interface InsightsData {
+    insights: {
+        problemStatement: { insights: string };
+        solution: { insights: string };
+        targetCustomer: { insights: string };
+        features: { insights: string };
+        userJourney: { insights: string };
+        timelineEstimate: { insights: string };
+        budgetEstimate: { insights: string };
+        riskFactors: { insights: string };
+        recommendations: { insights: string };
+        overallAssessment: { insights: string };
     };
 }
 
@@ -41,7 +56,7 @@ export default function ReportPage({ params }: PageProps) {
     const [user, setUser] = useState<SupabaseUser | null>(null);
     const [mvpData, setMvpData] = useState<MVPData | null>(null);
     const [editedMvpData, setEditedMvpData] = useState<MVPData | null>(null);
-    const [insights, setInsights] = useState<any | null>(null);
+    const [insights, setInsights] = useState<InsightsData | null>(null);
     const [insightsError, setInsightsError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -50,7 +65,7 @@ export default function ReportPage({ params }: PageProps) {
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [isRegeneratingInsights, setIsRegeneratingInsights] = useState(false);
 
-    const generateInsights = useCallback(async (mvpDataToUse) => {
+    const generateInsights = useCallback(async (mvpDataToUse: MVPData) => {
         setInsightsError(null);
         console.log('Generating insights for: ', mvpDataToUse)
 
@@ -103,9 +118,9 @@ export default function ReportPage({ params }: PageProps) {
                 console.log('Database update successful:');
             }
             
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error generating insights:', err);
-            setInsightsError(err.message || 'Failed to generate insights');
+            setInsightsError(err instanceof Error ? err.message : 'Failed to generate insights');
         }
     }, [id, user?.id]);
 
@@ -166,9 +181,9 @@ export default function ReportPage({ params }: PageProps) {
                     await generateInsights(data.data);
                 }
 
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error('Error fetching MVP plan:', err);
-                setError(err.message || 'Failed to load MVP plan');
+                setError(err instanceof Error ? err.message : 'Failed to load MVP plan');
             } finally {
                 setLoading(false);
             }
@@ -189,6 +204,8 @@ export default function ReportPage({ params }: PageProps) {
     };
 
     const handleRegenInsights = async () => {
+        if (!editedMvpData) return;
+        
         setIsRegeneratingInsights(true);
         console.log('Getting insights...')
         await generateInsights(editedMvpData);
@@ -221,15 +238,15 @@ export default function ReportPage({ params }: PageProps) {
             
             // Hide success message after 3 seconds
             setTimeout(() => setSaveSuccess(false), 3000);
-        } catch (err: any) {
-            console.error('Error saving MVP plan:', err);
-            alert('Failed to save changes: ' + err.message);
+            } catch (err: unknown) {
+                console.error('Error saving MVP plan:', err);
+                alert('Failed to save changes: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setIsSaving(false);
         }
     };
 
-    const updateField = (field: keyof MVPData, value: any) => {
+    const updateField = (field: keyof MVPData, value: unknown) => {
         if (!editedMvpData) return;
         setEditedMvpData({ ...editedMvpData, [field]: value });
     };
@@ -400,6 +417,19 @@ export default function ReportPage({ params }: PageProps) {
                         </a>
                     </div>
 
+                    {/* Insights Error Display */}
+                        {insightsError && (
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-8">
+                                <div className="flex items-center gap-2">
+                                    <div className="text-red-500">⚠️</div>
+                                    <div>
+                                        <h3 className="text-red-800 dark:text-red-200 font-semibold">Insights Generation Error</h3>
+                                        <p className="text-red-700 dark:text-red-300 text-sm">{insightsError}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                     {/* Combined MVP Data Card with Edit Controls */}
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 relative">
                         
@@ -528,7 +558,9 @@ export default function ReportPage({ params }: PageProps) {
                                         <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{mvpData.problemStatement}</p>
                                     )}
                                 </div>
-                                <p className='text-red-200 my-2'><strong>Suggestion: </strong>{insights.insights.problemStatement.insights}</p>
+                                {insights && (
+                                    <p className='text-red-200 my-2'><strong>Suggestion: </strong>{insights.insights.problemStatement.insights}</p>
+                                )}
                             </div>
                             
                             <div className="mb-8">
@@ -548,7 +580,9 @@ export default function ReportPage({ params }: PageProps) {
                                         <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{mvpData.solution}</p>
                                     )}
                                 </div>
-                                <p className='text-red-200 my-2'><strong>Suggestion: </strong>{insights.insights.solution.insights}</p>
+                                {insights && (
+                                    <p className='text-red-200 my-2'><strong>Suggestion: </strong>{insights.insights.solution.insights}</p>
+                                )}
                             </div>
                         </div>
 
@@ -570,7 +604,9 @@ export default function ReportPage({ params }: PageProps) {
                                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{mvpData.targetCustomer}</p>
                                 )}
                             </div>
-                            <p className='text-red-200 my-2'><strong>Suggestion: </strong>{insights.insights.targetCustomer.insights}</p>
+                            {insights && (
+                                <p className='text-red-200 my-2'><strong>Suggestion: </strong>{insights.insights.targetCustomer.insights}</p>
+                            )}
                         </div>
 
                         {/* Feature Prioritization */}
@@ -643,7 +679,9 @@ export default function ReportPage({ params }: PageProps) {
                                 </div>
                             )}
                         </div>
-                        <p className='text-red-200 my-2'><strong>Suggestion: </strong>{insights.insights.features.insights}</p>
+                        {insights && (
+                            <p className='text-red-200 my-2'><strong>Suggestion: </strong>{insights.insights.features.insights}</p>
+                        )}
 
                         {/* User Journey */}
                         <div className="mb-10">
@@ -713,7 +751,10 @@ export default function ReportPage({ params }: PageProps) {
                                     </div>
                                 ))}
                             </div>
-                            <p className='text-red-200 my-2'><strong>Suggestion: </strong>{insights.insights.userJourney.insights}</p>
+                            {insights && (
+                                <p className='text-red-200 my-2'><strong>Suggestion: </strong>{insights.insights.userJourney.insights}</p>
+                            )}
+                            
                         </div>
 
                         {/* Development Roadmap */}
@@ -788,31 +829,46 @@ export default function ReportPage({ params }: PageProps) {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="bg-gray-800/50 rounded-lg p-6 border-b-4 border-green-400">
                                 <h3 className="text-green-300 font-semibold text-lg mb-2">Timeline Estimate</h3>
-                                <p className="text-gray-300 leading-relaxed">{insights.insights.timelineEstimate.insights}</p>
+                                {insights && (
+                                    <p className="text-gray-300 leading-relaxed">{insights.insights.timelineEstimate.insights}</p>
+                                )}
+                                
                                 </div>
 
                                 <div className="bg-gray-800/50 rounded-lg p-6 border-b-4 border-blue-400">
                                 <h3 className="text-blue-300 font-semibold text-lg mb-2">Budget Estimate</h3>
-                                <p className="text-gray-300 leading-relaxed">{insights.insights.budgetEstimate.insights}</p>
+                                {insights && (
+                                    <p className="text-gray-300 leading-relaxed">{insights.insights.budgetEstimate.insights}</p>
+                                )}
+                                
                                 </div>
                             </div>
 
                             {/* Risk Factors - Full Width */}
                             <div className="bg-gray-800/50 rounded-lg p-6 border-b-4 border-red-400">
                                 <h3 className="text-red-300 font-semibold text-lg mb-2">Risk Factors</h3>
-                                <p className="text-gray-300 leading-relaxed">{insights.insights.riskFactors.insights}</p>
+                                {insights && (
+                                    <p className="text-gray-300 leading-relaxed">{insights.insights.riskFactors.insights}</p>
+                                )}
+                                
                             </div>
 
                             {/* Recommendations and Overall Assessment - Side by Side */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="bg-gray-800/50 rounded-lg p-6 border-b-4 border-purple-400">
                                 <h3 className="text-purple-300 font-semibold text-lg mb-2">Recommendations</h3>
-                                <p className="text-gray-300 leading-relaxed">{insights.insights.recommendations.insights}</p>
+                                {insights && (
+                                    <p className="text-gray-300 leading-relaxed">{insights.insights.recommendations.insights}</p>
+                                )}
+                                
                                 </div>
 
                                 <div className="bg-gray-800/50 rounded-lg p-6 border-b-4 border-yellow-400">
                                 <h3 className="text-yellow-300 font-semibold text-lg mb-2">Overall Assessment</h3>
-                                <p className="text-gray-300 leading-relaxed">{insights.insights.overallAssessment.insights}</p>
+                                {insights && (
+                                    <p className="text-gray-300 leading-relaxed">{insights.insights.overallAssessment.insights}</p>
+                                )}
+                                
                                 </div>
                             </div>
                             </div>
