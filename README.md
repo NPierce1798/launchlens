@@ -20,17 +20,53 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+## Core Features
+    - Competitor Profiles/Insights Search
+        - POCs
+        - LinkedIn Profiles
+        - Description
+        - Logo
+        - Funding
+        - Job Postings
+        - Press Coverage
+        - Tech?
+    - MVP Guide
+        - Guide
+            - 7 step progressive form
+            - visual progress tracking
+            - step validation
+            - navigation
+            - sidebar w/ step view
+        - Data Collection
+            - problem statement
+            - target customer
+            - solution description
+            - industry type
+            - feature prioritization
+            - user journey map
+            - final options
+                - include pitchdeck (coming soon)
+        - Report
+            - exec summary
+            - problem & solution
+            - target customer
+            - feature prioritization matrix
+            - user journey & feature mapping
+            - development roadmap (by phase)
+            - next steps & success metrics
+            - pitchdeck integration (coming soon)
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Potential Integrations
+    - Developers *
+    - UX/UI Design *
+    - Fundraising *
+    - Business & Financial Planner *
+    - Lawyer *
+    - Accounting/Bookeeping *
+    - Marketing *
+    - Sales Consulting/Coaching *
+    - Operations Consultant *
+    - Business Coach/Mentors *
+    - HR Recruiting Specialist
+    - Copywriter
+    - Public Relations

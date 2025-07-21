@@ -8,6 +8,97 @@ export class OpenAiClient {
         this.openai = new OpenAI({ apiKey });
     }
 
+    async generateMVPInsights(mvpData: {
+        problemStatement: string;
+        targetCustomer: string;
+        solution: string;
+        industry: string;
+        features: Array<{
+            id: number;
+            name: string;
+            priority: string;
+        }>;
+        userJourney: Array<{
+            id: number;
+            step: string;
+            features: Array<{
+                id: number;
+                name: string;
+            }>;
+            isDefault?: boolean;
+        }>;
+        includePitchDeck: boolean;
+    }): Promise<{
+        problemStatement: string;
+        targetCustomer: string;
+        solution: string;
+        industry: string;
+        features: string;
+        userJourney: string;
+        overallAssessment: string;
+        riskFactors: string;
+        recommendations: string;
+        timelineEstimate: string;
+        budgetEstimate: string;
+    }> {
+        const mustHaveFeatures = mvpData.features.filter(f => f.priority === 'must-have');
+        const totalFeatures = mvpData.features.length;
+
+        const response = await this.openai.chat.completions.create({
+            model: 'gpt-4',
+            messages: [
+                {
+                    role: 'system',
+                    content: `
+                        You are an expert startup advisor and product strategist with deep experience in MVP development, market analysis, and startup success factors.
+                        
+                        Analyze the provided MVP plan and generate actionable insights for each component. Your insights should be:
+                        - Specific and actionable
+                        - Based on startup best practices and market data
+                        - Focused on identifying risks and opportunities
+                        - Practical for founders to implement
+                        - Estimates should be realistic for cost and time
+                        
+                        Respond ONLY with a JSON object containing insights for each key. Add a 'competitors' key and list the top 5 competitors, what they do well, and where they can improve.
+                    `,
+                },
+                {
+                    role: 'user',
+                    content: `
+                        Analyze this MVP plan and provide insights:
+                        
+                        Problem Statement: ${mvpData.problemStatement}
+                        Target Customer: ${mvpData.targetCustomer}
+                        Solution: ${mvpData.solution}
+                        Industry: ${mvpData.industry}
+                        Must-Have Features (${mustHaveFeatures.length}): ${mustHaveFeatures.map(f => f.name).join(', ')}
+                        Total Features: ${totalFeatures}
+                        User Journey Steps: ${mvpData.userJourney.map(step => step.step).join(' → ')}
+                        
+                        Provide insights for:
+                        {
+                            "problemStatement": "Analysis of problem clarity, market size, urgency, and validation suggestions",
+                            "targetCustomer": "Customer segment analysis, market accessibility, and targeting recommendations",
+                            "solution": "Solution-market fit assessment, differentiation analysis, and positioning insights",
+                            "industry": "Industry trends, competitive landscape, and market timing analysis",
+                            "features": "Feature complexity analysis, development prioritization insights, and scope recommendations",
+                            "userJourney": "Journey flow analysis, friction points identification, and optimization suggestions",
+                            "overallAssessment": "Overall MVP viability, strengths, and strategic assessment",
+                            "riskFactors": "Key risks, potential failure points, and mitigation strategies",
+                            "recommendations": "Top 3-5 immediate next steps and strategic recommendations",
+                            "timelineEstimate": "Realistic development timeline estimate with factors and assumptions",
+                            "budgetEstimate": "Development cost estimate range with key cost drivers and variables"
+                        }
+                    `,
+                },
+            ],
+        temperature: 0.3, // Lower temperature for more consistent, analytical responses
+    });
+
+    const text = response.choices[0].message.content || '{}';
+    return JSON.parse(text);
+}
+
     async extractKeywords(context: {
         idea: string;
         targetCustomer: string;

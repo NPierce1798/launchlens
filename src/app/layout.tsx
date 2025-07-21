@@ -17,6 +17,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "LaunchLens",
   description: "Validate your ideas",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

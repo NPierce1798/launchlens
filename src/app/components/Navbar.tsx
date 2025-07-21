@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
-import { Search, BarChart3, User, LogOut, Menu, X } from 'lucide-react';
+import { Search, BarChart3, User, LogOut, Menu, X, Target, Wrench } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export default function Navbar() {
@@ -64,8 +64,15 @@ export default function Navbar() {
                 href="/search" 
                 className="flex items-center gap-2 text-gray-300 hover:text-blue-400 transition-colors duration-200 font-medium"
               >
-                <Search size={16} />
-                Search
+                <Target size={16} />
+                Competitor Analysis
+              </Link>
+              <Link 
+                href="/mvp-builder" 
+                className="flex items-center gap-2 text-gray-300 hover:text-blue-400 transition-colors duration-200 font-medium"
+              >
+                <Wrench size={16} />
+                MVP Builder
               </Link>
               {user && (
                 <Link 
@@ -136,8 +143,16 @@ export default function Navbar() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center gap-3 text-gray-300 hover:text-blue-400 transition-colors duration-200 font-medium text-lg p-3 hover:bg-gray-700/30 rounded-lg"
                 >
-                  <Search size={20} />
-                  Search
+                  <Target size={20} />
+                  Competitor Analysis
+                </Link>
+                <Link 
+                  href="/mvp-builder" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 text-gray-300 hover:text-blue-400 transition-colors duration-200 font-medium text-lg p-3 hover:bg-gray-700/30 rounded-lg"
+                >
+                  <Wrench size={20} />
+                  MVP Builder
                 </Link>
                 {user && (
                   <Link 
