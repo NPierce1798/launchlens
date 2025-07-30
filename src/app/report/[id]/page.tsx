@@ -27,12 +27,6 @@ interface InsightsData {
     };
 }
 
-
-
-// Add pitchdeck
-
-
-
 interface MVPData {
     problemStatement: string;
     targetCustomer: string;
@@ -889,7 +883,7 @@ export default function ReportPage({ params }: PageProps) {
                                     <h2 className="text-2xl font-bold text-purple-800 dark:text-purple-200">Pitch Deck Integration (Coming Soon)</h2>
                                 </div>
                                 <p className="text-purple-700 dark:text-purple-300 mb-4">
-                                    Pitch deck builder tool has been requested and will be integrated with your MVP plan data.
+                                    Pitch deck builder tool has been requested and will be integrated with your MVP plan data automatically when feature is available.
                                 </p>
                                 <div className="bg-white dark:bg-gray-700 rounded-lg p-4">
                                     <p className="text-sm text-gray-600 dark:text-gray-400">
