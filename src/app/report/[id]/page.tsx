@@ -27,6 +27,12 @@ interface InsightsData {
     };
 }
 
+
+
+// Add pitchdeck
+
+
+
 interface MVPData {
     problemStatement: string;
     targetCustomer: string;
